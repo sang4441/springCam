@@ -1,7 +1,12 @@
 package com.androidexperiments.shadercam.example;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
+import android.net.Uri;
+import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
@@ -14,13 +19,21 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.androidexperiments.shadercam.example.gl.ExampleRenderer;
+import com.androidexperiments.shadercam.example.gl.SuperAwesomeRenderer;
 import com.androidexperiments.shadercam.fragments.CameraFragment;
 import com.androidexperiments.shadercam.fragments.PermissionsHelper;
 import com.androidexperiments.shadercam.gl.CameraRenderer;
 import com.androidexperiments.shadercam.utils.ShaderUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.IntBuffer;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -45,7 +58,9 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
      * We inject our views from our layout xml here using {@link ButterKnife}
      */
     @InjectView(R.id.texture_view) TextureView mTextureView;
-    @InjectView(R.id.btn_record) Button mRecordBtn;
+//    @InjectView(R.id.btn_detect) Button mRecordBtn;
+//    @InjectView(R.id.btn_shot) Button mRecordBtn;
+
 
     /**
      * Custom fragment used for encapsulating all the {@link android.hardware.camera2} apis.
@@ -66,12 +81,12 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     private PermissionsHelper mPermissionsHelper;
     private boolean mPermissionsSatisfied = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ButterKnife.inject(this);
 
         setupCameraFragment();
@@ -80,6 +95,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         //setup permissions for M or start normally
         if(PermissionsHelper.isMorHigher())
             setupPermissions();
+
     }
 
     private void setupPermissions() {
@@ -118,8 +134,15 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         mTextureView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(mRenderer instanceof ExampleRenderer) {
-                    ((ExampleRenderer) mRenderer).setTouchPoint(event.getRawX(), event.getRawY());
+                if(mRenderer instanceof SuperAwesomeRenderer) {
+//                    float ratio = event.getRawY() /
+
+//                    float x = 0.9f;
+//                    mRenderer.resetTextureStretch(x);
+//                    float x_render = (1.0f - x);
+//                    ((SuperAwesomeRenderer) mRenderer).setStretchX(x_render);
+
+                    ((SuperAwesomeRenderer) mRenderer).setTouchPoint(event.getRawX(), event.getRawY(), Sharedpreference.getState(getApplicationContext()));
                     return true;
                 }
                 return false;
@@ -156,6 +179,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
 
         Log.d(TAG, "onResume()");
 
+        super.onResume();
         ShaderUtils.goFullscreen(this.getWindow());
 
         /**
@@ -191,19 +215,23 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
      * {@link ButterKnife} uses annotations to make setting {@link android.view.View.OnClickListener}'s
      * easier than ever with the {@link OnClick} annotation.
      */
-    @OnClick(R.id.btn_record)
+//    @OnClick(R.id.btn_record)
+//    public void onClickRecord()
+//    {
+//        if(mRenderer.isRecording())
+//            stopRecording();
+//        else
+//            startRecording();
+//    }
+
+    @OnClick(R.id.btn_shot)
     public void onClickRecord()
     {
-        if(mRenderer.isRecording())
-            stopRecording();
-        else
-            startRecording();
-    }
-
-    @OnClick(R.id.btn_swap_camera)
-    public void onClickSwapCamera()
-    {
-        mCameraFragment.swapCamera();
+        takeShot();
+//        if(mRenderer.isRecording())
+//            stopRecording();
+//        else
+//            startRecording();
     }
 
     /**
@@ -231,16 +259,105 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         return new ExampleRenderer(this, surface, width, height);
     }
 
-    private void startRecording()
+//    private void takeShot() {
+////        mRenderer.takeShot();
+//    }
+
+    private static File getOutputMediaFile() {
+        File mediaStorageDir = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+                "모멘토");
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("Momento", "failed to create directory");
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                + "IMG_" + timeStamp + ".jpg");
+        return mediaFile;
+    }
+
+    public String saveBitmap(Bitmap bmp) {
+//        String path = getPath(getApplicationContext());
+//        long currentTime = System.currentTimeMillis();
+//        String filename = path + "/" + currentTime + ".jpg";
+        return saveBitmap(bmp, getOutputMediaFile().toString());
+    }
+
+    public static String saveBitmap(Bitmap bmp, String filename) {
+
+        Log.i("Log", "saving Bitmap : " + filename);
+
+        try {
+            FileOutputStream fileout = new FileOutputStream(filename);
+            BufferedOutputStream bufferOutStream = new BufferedOutputStream(fileout);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, bufferOutStream);
+            bufferOutStream.flush();
+            bufferOutStream.close();
+        } catch (IOException e) {
+            Log.e("Log", "Err when saving bitmap...");
+            e.printStackTrace();
+            return null;
+        }
+
+        Log.i("Log", "Bitmap " + filename + " saved!");
+        return filename;
+    }
+
+    protected void heightStretchPosition(float x_val) {
+        float x = x_val;
+        mRenderer.resetTextureStretch(x);
+        float x_render = (1.0f - x);
+        ((SuperAwesomeRenderer) mRenderer).setHeightStretchX(x_render);
+    }
+
+    protected void setFaceStrength(float x_strength) {
+        ((SuperAwesomeRenderer) mRenderer).setFaceStrength(x_strength);
+    }
+
+
+
+    protected void shoulderRightStretchPosition(float x_val, float y_val) {
+//        ((SuperAwesomeRenderer) mRenderer).setShoulderStretchDirection(x_val, y_val);
+    }
+
+
+    private void takeShot()
     {
-        mRenderer.startRecording(getVideoFile());
-        mRecordBtn.setText("Stop");
+
+        mRenderer.takeShot(new CameraRenderer.TakePictureCallback() {
+            @Override
+            public void takePictureOK(Bitmap bmp) {
+                if (bmp != null) {
+                    String s = saveBitmap(bmp);
+                    bmp.recycle();
+//                    showText("Take Shot success!");
+                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + s)));
+                } else {
+
+                }
+//                    showText("Take Shot failed!");
+            }
+
+
+
+//            @Override
+//            public void getJoints(List<JointModel> joints) {
+//                ((SuperAwesomeRenderer) mRenderer).setShoulderPointLeft(joints.get(8).getPointX(), joints.get(8).getPointY());
+//                ((SuperAwesomeRenderer) mRenderer).setShoulderPointRight(joints.get(9).getPointX(), joints.get(9).getPointY());
+//            }
+        });
     }
 
     private void stopRecording()
     {
         mRenderer.stopRecording();
-        mRecordBtn.setText("Record");
+//        mRecordBtn.setText("Record");
 
         //restart so surface is recreated
         shutdownCamera(true);
@@ -311,12 +428,12 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
      * rendering and recording elements once our TextureView is good to go.
      */
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener()
-        {
-            @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surface, final int width, final int height) {
-                //convenience method since we're calling it from two places
-                setReady(surface, width, height);
-            }
+    {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, final int width, final int height) {
+            //convenience method since we're calling it from two places
+            setReady(surface, width, height);
+        }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {

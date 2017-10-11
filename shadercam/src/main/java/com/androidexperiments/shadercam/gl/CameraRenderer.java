@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.media.MediaRecorder;
 import android.opengl.GLES11Ext;
@@ -21,6 +26,7 @@ import android.widget.Toast;
 import com.androidexperiments.shadercam.fragments.CameraFragment;
 import com.androidexperiments.shadercam.utils.ShaderUtils;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,9 +35,11 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.List;
 
 /** *
  * Base camera rendering class. Responsible for rendering to proper window contexts, as well as
@@ -109,9 +117,16 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
             squareSize, -squareSize, // 0.0f,   // bottom right
     };
 
+    private static float squareCoordsTwo[] = {
+            -squareSize, 0, // 0.0f,     // top left
+            squareSize, 0, // 0.0f,   // top right
+            -squareSize, -squareSize, // 0.0f,   // bottom left
+            squareSize, -squareSize, // 0.0f,   // bottom right
+    };
+
     private static short drawOrder[] = {0, 1, 2, 1, 3, 2};
 
-    private FloatBuffer textureBuffer;
+    private FloatBuffer textureBuffer, textureBufferTwo;
 
     private float textureCoords[] = {
             0.0f, 1.0f,
@@ -119,16 +134,30 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
             0.0f, 0.0f,
             1.0f, 0.0f,
     };
+    ByteBuffer bufferTracker;
 
-    protected int mCameraShaderProgram;
+    private float textureCoordsTwo[] = {
+            0.0f, 0.8f,
+            1.0f, 0.8f,
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+    };
 
-    private FloatBuffer vertexBuffer;
+    //     0.0f, 0.5f,
+//             1.0f, 0.5f,
+//             0.0f, 0.0f,
+//             1.0f, 0.0f,
+
+    protected int mCameraShaderProgram, mCameraShaderProgramTwo;
+
+    private FloatBuffer vertexBuffer, vertexBufferTwo;
 
     private ShortBuffer drawListBuffer;
-
-    private int textureCoordinateHandle;
+    private int textureCoordinateHandle, textureCoordinateHandleTwo;
 
     private int positionHandle;
+
+    private boolean isShot;
 
     /**
      * "arbitrary" maximum number of textures. seems that most phones dont like more than 16
@@ -255,6 +284,11 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
     private String mFragmentShaderPath;
     private String mVertexShaderPath;
 
+
+    private TakePictureCallback mShotCallback;
+
+
+
     /**
      * Simple ctor to use default shaders
      */
@@ -287,7 +321,10 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
 
         this.mFragmentShaderPath = fragPath;
         this.mVertexShaderPath = vertPath;
+
+        this.isShot = false;
     }
+
 
     private void initialize() {
         mTextureArray = new ArrayList<>();
@@ -455,6 +492,7 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
     protected void deinitGLComponents() {
         GLES20.glDeleteTextures(MAX_TEXTURES, mTexturesIds, 0);
         GLES20.glDeleteProgram(mCameraShaderProgram);
+        GLES20.glDeleteProgram(mCameraShaderProgramTwo);
 
         mPreviewTexture.release();
         mPreviewTexture.setOnFrameAvailableListener(null);
@@ -486,6 +524,37 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         vertexBuffer = bb.asFloatBuffer();
         vertexBuffer.put(squareCoords);
         vertexBuffer.position(0);
+//
+//        bb = ByteBuffer.allocateDirect(squareCoordsTwo.length * 4);
+//        bb.order(ByteOrder.nativeOrder());
+//        vertexBufferTwo = bb.asFloatBuffer();
+//        vertexBufferTwo.put(squareCoordsTwo);
+//
+//        vertexBufferTwo.position(0);
+    }
+
+    public void resetTextureStretch(float x) {
+
+        float stretch_x = x;
+
+//        float ratio = point_x / mSurfaceHeight;
+
+        float textureCoordsTwo[] = {
+                0.0f, stretch_x,
+                1.0f, stretch_x,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+        };
+
+        ByteBuffer texture = ByteBuffer.allocateDirect(textureCoordsTwo.length * 4);
+        texture.order(ByteOrder.nativeOrder());
+
+        textureBufferTwo = texture.asFloatBuffer();
+        textureBufferTwo.put(textureCoordsTwo);
+        textureBufferTwo.position(0);
+
+        GLES20.glEnableVertexAttribArray(textureCoordinateHandleTwo);
+        GLES20.glVertexAttribPointer(textureCoordinateHandleTwo, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBufferTwo);
     }
 
     protected void setupTextures()
@@ -497,8 +566,17 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         textureBuffer.put(textureCoords);
         textureBuffer.position(0);
 
+        texturebb = ByteBuffer.allocateDirect(textureCoordsTwo.length * 4);
+        texturebb.order(ByteOrder.nativeOrder());
+
+        textureBufferTwo = texturebb.asFloatBuffer();
+        textureBufferTwo.put(textureCoordsTwo);
+        textureBufferTwo.position(0);
+
         // Generate the max amount texture ids
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glGenTextures(MAX_TEXTURES, mTexturesIds, 0);
+
         checkGlError("Texture generate");
     }
 
@@ -510,6 +588,14 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         //set texture[0] to camera texture
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTexturesIds[0]);
+
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+
         checkGlError("Texture bind");
 
         mPreviewTexture = new SurfaceTexture(mTexturesIds[0]);
@@ -535,13 +621,18 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         Log.d(TAG, "fragmentShader info log:\n " + GLES20.glGetShaderInfoLog(fragmentShaderHandle));
 
         mCameraShaderProgram = GLES20.glCreateProgram();
+        mCameraShaderProgramTwo = GLES20.glCreateProgram();
         GLES20.glAttachShader(mCameraShaderProgram, vertexShaderHandle);
+        GLES20.glAttachShader(mCameraShaderProgramTwo, vertexShaderHandle);
         GLES20.glAttachShader(mCameraShaderProgram, fragmentShaderHandle);
+        GLES20.glAttachShader(mCameraShaderProgramTwo, fragmentShaderHandle);
         GLES20.glLinkProgram(mCameraShaderProgram);
+        GLES20.glLinkProgram(mCameraShaderProgramTwo);
         checkGlError("Shader program compile");
 
         int[] status = new int[1];
         GLES20.glGetProgramiv(mCameraShaderProgram, GLES20.GL_LINK_STATUS, status, 0);
+        GLES20.glGetProgramiv(mCameraShaderProgramTwo, GLES20.GL_LINK_STATUS, status, 0);
         if (status[0] != GLES20.GL_TRUE) {
             String error = GLES20.glGetProgramInfoLog(mCameraShaderProgram);
             Log.e("SurfaceTest", "Error while linking program:\n" + error);
@@ -685,11 +776,76 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
 
         //set shader
         GLES20.glUseProgram(mCameraShaderProgram);
+        GLES20.glUseProgram(mCameraShaderProgramTwo);
+
 
         setUniformsAndAttribs();
         setExtraTextures();
         drawElements();
+
+
+        if (isShot) {
+
+            IntBuffer buffer;
+            Bitmap bmp;
+            buffer = IntBuffer.allocate(mViewportWidth * mViewportHeight);
+            GLES20.glReadPixels(0, 0, mViewportWidth, mViewportHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+            bmp = Bitmap.createBitmap(mViewportWidth, mViewportHeight, Bitmap.Config.ARGB_8888);
+            bmp.copyPixelsFromBuffer(buffer);
+            Log.i("TAG", String.format("w: %d, h: %d", mViewportWidth, mViewportHeight));
+            mShotCallback.takePictureOK(rotateImage(bmp, 180));
+
+            isShot = false;
+
+        }
+
         onDrawCleanup();
+    }
+
+    public Bitmap toGrayscale(Bitmap bmpOriginal)
+    {
+        int width, height;
+        height = bmpOriginal.getHeight();
+        width = bmpOriginal.getWidth();
+
+        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmpGrayscale);
+        Paint paint = new Paint();
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);
+        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
+        paint.setColorFilter(f);
+        c.drawBitmap(bmpOriginal, 0, 0, paint);
+        return bmpGrayscale;
+    }
+
+    public Bitmap bitmapResizer(Bitmap bitmap,int newWidth,int newHeight) {
+        Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+
+        float ratioX = newWidth / (float) bitmap.getWidth();
+        float ratioY = newHeight / (float) bitmap.getHeight();
+        float middleX = newWidth / 2.0f;
+        float middleY = newHeight / 2.0f;
+
+        Matrix scaleMatrix = new Matrix();
+        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+
+        Canvas canvas = new Canvas(scaledBitmap);
+        canvas.setMatrix(scaleMatrix);
+        canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
+
+        return scaledBitmap;
+
+    }
+
+    public static Bitmap rotateImage(Bitmap src, float degree)
+    {
+        // create new matrix
+        Matrix matrix = new Matrix();
+        // setup rotation degree
+        matrix.postRotate(degree);
+        Bitmap bmp = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
+        return bmp;
     }
 
     /**
@@ -709,6 +865,7 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         int textureParamHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "camTexture");
         int textureTranformHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "camTextureTransform");
         textureCoordinateHandle = GLES20.glGetAttribLocation(mCameraShaderProgram, "camTexCoordinate");
+        textureCoordinateHandleTwo = GLES20.glGetAttribLocation(mCameraShaderProgram, "camTexCoordinateTwo");
         positionHandle = GLES20.glGetAttribLocation(mCameraShaderProgram, "position");
 
 
@@ -723,6 +880,8 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         GLES20.glEnableVertexAttribArray(textureCoordinateHandle);
         GLES20.glVertexAttribPointer(textureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBuffer);
 
+        GLES20.glEnableVertexAttribArray(textureCoordinateHandleTwo);
+        GLES20.glVertexAttribPointer(textureCoordinateHandleTwo, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBufferTwo);
         GLES20.glUniformMatrix4fv(textureTranformHandle, 1, false, mCameraTransformMatrix, 0);
     }
 
@@ -806,6 +965,7 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         {
             Texture tex = mTextureArray.get(i);
             int imageParamHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, tex.uniformName);
+            int imageParamHandleTwo = GLES20.glGetUniformLocation(mCameraShaderProgramTwo, tex.uniformName);
 
             GLES20.glActiveTexture(tex.texId);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexturesIds[tex.texNum]);
@@ -820,6 +980,8 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
     protected void onDrawCleanup() {
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(textureCoordinateHandle);
+//        GLES20.glDisableVertexAttribArray(textureCoordinateHandleTwo);
+
     }
 
     /**
@@ -855,6 +1017,21 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
 
     public void setOnRendererReadyListener(OnRendererReadyListener listener) {
         mOnRendererReadyListener = listener;
+
+    }
+    public interface TakePictureCallback {
+        //You can recycle the bitmap.
+        void takePictureOK(Bitmap bmp);
+
+//        void getJoints(List<JointModel> joints);
+    }
+
+
+
+    public void takeShot(TakePictureCallback callback) {
+
+        mShotCallback = callback;
+        isShot = true;
 
     }
 
@@ -1011,4 +1188,6 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
          */
         void onRendererFinished();
     }
+
+
 }
