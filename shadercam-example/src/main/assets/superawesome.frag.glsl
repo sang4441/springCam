@@ -395,7 +395,7 @@ vec2 Distort(vec2 p)
     return p;
 }
 
-vec2 test(vec2 p) {
+vec4 test(vec2 p) {
 
     vec2 texSize = vec2(height, width);
     vec2 tc = p * texSize;
@@ -406,20 +406,27 @@ vec2 test(vec2 p) {
 
 //    vec2 xy = p / 100.0;
 
-
-    if (distFace < 300.0)
+    vec4 bgColor;
+    if (distFace < radius_face)
     {
-        tc.x = (tc.x - point_face.x) / 300.0;
-        tc.y = (tc.y - point_face.y) / 300.0;
+        tc.x = (tc.x - point_face.x) / radius_face;
+        tc.y = (tc.y - point_face.y) / radius_face;
 
         tc = Distort(tc);
 
-        tc.x = (tc.x * 300.0) + point_face.x;
-        tc.y = (tc.y * 300.0) + point_face.y;
+        tc.x = (tc.x * radius_face) + point_face.x;
+        tc.y = (tc.y * radius_face) + point_face.y;
+//        bgColor = vec4(0.7, 1.0, 1.0, 1.0);
 
     }
+//    else
+//    {
+////        bgColor = vec4(1.0, 1.0, 1.0, 1.0);
+//    }
 
-    return tc / texSize;
+     vec4 c = texture2D(camTexture, tc / texSize);
+
+    return c;
 }
 
 void main ()
@@ -448,9 +455,10 @@ void main ()
   {
 //    vec4 c = bodyShape(v_CamTexCoordinate.xy);
 //    gl_FragColor = c;
-        uv = test(v_CamTexCoordinate.xy);
-      vec4 c = texture2D(camTexture, uv);
-      gl_FragColor = c;
+
+//        uv = test(v_CamTexCoordinate.xy);
+//      vec4 c = texture2D(camTexture, uv);
+      gl_FragColor = test(v_CamTexCoordinate.xy);
   }
   else if (v_CamTexCoordinate.x>=(stretch_x_point))
   {

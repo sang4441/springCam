@@ -28,7 +28,7 @@ public class SuperAwesomeRenderer extends CameraRenderer {
 
     private float mRadiusShoulder = 70.0f;
     private float mRadiusChest = 80.0f;
-    private float mRadiusFace = 150.0f;
+    private float mRadiusFace = 300.0f;
 
     private float mStrengthShoulder = 0.0f;
     private float mStrengthChest = 0.0f;
@@ -139,8 +139,12 @@ public class SuperAwesomeRenderer extends CameraRenderer {
 //        this.mShoulder_right_y =  y;
 //    }
 
+    public void setFaceRadius(float radius) {
+        this.mRadiusFace = radius;
+    }
+
     public void setFacePoint(float x, float y) {
-        this.mFace_x =  x;
+        this.mFace_x =  mSurfaceWidth - x;
         this.mFace_y =  y;
 
 //        this.mChest_left_x = x - 50;

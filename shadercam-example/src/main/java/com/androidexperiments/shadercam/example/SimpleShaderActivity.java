@@ -488,6 +488,8 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
+            ((SuperAwesomeRenderer) mRenderer).setFacePoint((face.getPosition().x + face.getWidth() / 2 ) * 4, (face.getPosition().y + face.getHeight() / 2) * 4);
+            ((SuperAwesomeRenderer) mRenderer).setFaceRadius(face.getHeight() * 3);
             return new GraphicFaceTracker(mGraphicOverlay);
         }
     }
@@ -520,6 +522,8 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         @Override
         public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
             mOverlay.add(mFaceGraphic);
+            ((SuperAwesomeRenderer) mRenderer).setFacePoint((face.getPosition().x + face.getWidth() / 2 ) * 4, (face.getPosition().y + face.getHeight() / 2) * 4);
+            ((SuperAwesomeRenderer) mRenderer).setFaceRadius(face.getHeight() * 3);
             mFaceGraphic.updateFace(face);
         }
 
