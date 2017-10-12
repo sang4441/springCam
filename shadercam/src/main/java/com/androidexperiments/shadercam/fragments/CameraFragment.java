@@ -672,7 +672,7 @@ public class CameraFragment extends Fragment {
     }
 
     public void setOverlay() {
-        mOverlay.setCameraInfo(mPreviewSize.getWidth()/4, mPreviewSize.getHeight()/4, 0);
+        mOverlay.setCameraInfo(mPreviewSize.getHeight()/4, mPreviewSize.getWidth()/4, 0);
         mOverlay.clear();
     }
 
@@ -817,8 +817,11 @@ public class CameraFragment extends Fragment {
                         return;
                     }
 
+                    int width = mPreviewSize.getWidth();
+                    int height = mPreviewSize.getHeight();
+
                     outputFrame = new Frame.Builder()
-                            .setImageData(ByteBuffer.wrap(quarterNV21(mPendingFrameData, mPreviewSize.getWidth(), mPreviewSize.getHeight())), mPreviewSize.getWidth()/4, mPreviewSize.getHeight()/4, ImageFormat.NV21)
+                            .setImageData(quarterNV21(mPendingFrameData, mPreviewSize.getWidth(), mPreviewSize.getHeight()), mPreviewSize.getWidth()/4, mPreviewSize.getHeight()/4, ImageFormat.NV21)
                             .setId(mPendingFrameId)
                             .setTimestampMillis(mPendingTimeMillis)
                             .setRotation(getDetectorOrientation(mSensorOrientation))
@@ -872,27 +875,27 @@ public class CameraFragment extends Fragment {
         return data;
     }
 
-    private byte[] quarterNV21(byte[] data, int iWidth, int iHeight) {
+    private ByteBuffer quarterNV21(byte[] data, int imageWidth, int imageHeight) {
         // Reduce to quarter size the NV21 frame
-        byte[] yuv = new byte[iWidth/4 * iHeight/4 * 3 / 2];
+        byte[] yuv = new byte[imageWidth/4 * imageHeight/4 * 3 / 2];
         // halve yuma
         int i = 0;
-        for (int y = 0; y < iHeight; y+=4) {
-            for (int x = 0; x < iWidth; x+=4) {
-                yuv[i] = data[y * iWidth + x];
+        for (int y = 0; y < imageHeight; y+=4) {
+            for (int x = 0; x < imageWidth; x+=4) {
+                yuv[i] = data[y * imageWidth + x];
                 i++;
             }
         }
         // halve U and V color components
-        /*
-        for (int y = 0; y < iHeight / 2; y+=4) {
-            for (int x = 0; x < iWidth; x += 8) {
-                yuv[i] = data[(iWidth * iHeight) + (y * iWidth) + x];
+        for (int y = 0; y < imageHeight / 2; y+=4) {
+            for (int x = 0; x < imageWidth; x += 8) {
+                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth) + x];
                 i++;
-                yuv[i] = data[(iWidth * iHeight) + (y * iWidth) + (x + 1)];
+                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth) + (x + 1)];
                 i++;
             }
-        }*/
-        return yuv;
+        }
+        //REDUCED TO QUARTER QUALITY AND ONLY IN GRAY SCALE!
+        return ByteBuffer.wrap(yuv);
     }
 }
