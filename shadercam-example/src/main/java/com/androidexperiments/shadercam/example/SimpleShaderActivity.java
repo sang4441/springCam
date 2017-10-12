@@ -99,10 +99,10 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
 
         previewFaceDetector = new FaceDetector.Builder(getApplicationContext())
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
-                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-                .setMode(FaceDetector.FAST_MODE)
-                .setProminentFaceOnly(true)
-                .setTrackingEnabled(true)
+//                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+//                .setMode(FaceDetector.FAST_MODE)
+//                .setProminentFaceOnly(true)
+//                .setTrackingEnabled(true)
                 .build();
         if(previewFaceDetector.isOperational()) {
             previewFaceDetector.setProcessor(new MultiProcessor.Builder<>(new GraphicFaceTrackerFactory()).build());
