@@ -132,7 +132,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                             (int) me.getRawY(), 0, 0);
                     v.setLayoutParams(params);
 
-                    ((SuperAwesomeRenderer) mRenderer).setTouchPoint(me.getRawX(), me.getRawY());
+                    ((SuperAwesomeRenderer) mRenderer).setTouchPoint(me.getRawX(), me.getRawY() + 25);
 
                     RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
@@ -146,17 +146,22 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
             }
         });
 
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
-//        params.setMargins(mTextureView.getWidth() - 100, 1000 , 0, 0);
-//        btnControlHeight.setLayoutParams(params);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+//        int width = mTextureView.getWidth();
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
+        params.setMargins(width - 100, height / 2 , 0, 0);
+        btnControlHeight.setLayoutParams(params);
 //
-//        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-//
-//        lp.leftMargin = 20;
-//        lp.topMargin = 1000;
-//        lp.width = mTextureView.getWidth() - 120;
-//        lp.height = 50;
-//        mSeekbar.setLayoutParams(lp);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        lp.leftMargin = 20;
+        lp.topMargin = height / 2 + 25;
+        lp.width = width - 120;
+        lp.height = 50;
+        mSeekbar.setLayoutParams(lp);
 
 //        mSeekbar = new SeekBar(this);
 //        mSeekbar.setMax(100);
