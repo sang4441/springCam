@@ -1,1 +1,1 @@
-include ':shadercam', ':shadercam-example'
+include ':shadercam', ':3cm'

@@ -9,8 +9,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/3cm" />
             <option value="$PROJECT_DIR$/shadercam" />
-            <option value="$PROJECT_DIR$/shadercam-example" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

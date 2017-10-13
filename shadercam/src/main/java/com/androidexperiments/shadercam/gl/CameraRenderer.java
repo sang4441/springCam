@@ -844,6 +844,7 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
         Matrix matrix = new Matrix();
         // setup rotation degree
         matrix.postRotate(degree);
+        matrix.postScale(-1, 1, src.getWidth()/2, src.getHeight()/2);
         Bitmap bmp = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
         return bmp;
     }
