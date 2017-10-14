@@ -103,7 +103,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     private FaceDetector previewFaceDetector = null;
     private GraphicOverlay mGraphicOverlay;
 
-    private SeekBar mSeekbar;
+    private SeekBar mSeekbarHeight, mSeekbarFace;
     private Button btnControlHeight;
     private FrameLayout cameraContainerLayout;
 
@@ -116,7 +116,28 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         cameraContainerLayout = (FrameLayout) findViewById(R.id.glviewFrameLayout);
 
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
-        mSeekbar = (SeekBar) findViewById(R.id.seek_bar);
+        mSeekbarHeight = (SeekBar) findViewById(R.id.seek_bar_height);
+
+        mSeekbarFace = (SeekBar) findViewById(R.id.seek_bar_face);
+        mSeekbarFace.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+        mSeekbarFace.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        mSeekbarFace.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                ((SuperAwesomeRenderer) mRenderer).setFaceStrength(1.0f + (float)i/1000);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         btnControlHeight = (Button)findViewById(R.id.btn_control_height);
 
         btnControlHeight.setOnTouchListener(new View.OnTouchListener() {
@@ -140,7 +161,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                     lp.topMargin = (int)me.getRawY() + 25;
                     lp.width = mTextureView.getWidth() - 120;
                     lp.height = 50;
-                    mSeekbar.setLayoutParams(lp);
+                    mSeekbarHeight.setLayoutParams(lp);
                 }
                 return true;
             }
@@ -161,7 +182,9 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         lp.topMargin = height / 2 + 25;
         lp.width = width - 120;
         lp.height = 50;
-        mSeekbar.setLayoutParams(lp);
+        mSeekbarHeight.setLayoutParams(lp);
+
+
 
 //        mSeekbar = new SeekBar(this);
 //        mSeekbar.setMax(100);
@@ -180,9 +203,9 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
 //        mSeekbar.setLayoutParams(lp);
 //        btnShot.setLayoutParams(lp);
 
-        mSeekbar.setOnSeekBarChangeListener(this);
-        mSeekbar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
-        mSeekbar.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        mSeekbarHeight.setOnSeekBarChangeListener(this);
+        mSeekbarHeight.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+        mSeekbarHeight.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
 
 
 //        LinearLayout ll = new LinearLayout(this);
@@ -325,7 +348,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                     lp.width = 1000;
                     lp.height = 30;
 
-                    mSeekbar.setLayoutParams(lp);
+                    mSeekbarHeight.setLayoutParams(lp);
 
                     RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
@@ -463,7 +486,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     private static File getOutputMediaFile() {
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-                "모멘토");
+                "3CM");
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d("Momento", "failed to create directory");

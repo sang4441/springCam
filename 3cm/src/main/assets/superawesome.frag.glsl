@@ -44,11 +44,11 @@ vec2 Distort(vec2 p)
 {
     float theta  = atan(p.y, p.x);
     float radius = length(p);
-    float power = 1.1;
+    float power = strength_face;
     if (radius >= 0.6 && radius < 1.0)
     {
          float percent = (1.0 - (radius - 0.6) / 0.4);
-         power =  1.0 + 0.1 * percent;
+         power =  1.0 + (power - 1.0) * percent;
          radius = radius * power;
          p.x = radius * cos(theta);
          p.y = radius * sin(theta);

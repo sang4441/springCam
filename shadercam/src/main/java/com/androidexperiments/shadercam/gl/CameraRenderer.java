@@ -137,8 +137,8 @@ public class CameraRenderer extends Thread implements SurfaceTexture.OnFrameAvai
     ByteBuffer bufferTracker;
 
     private float textureCoordsTwo[] = {
-            0.0f, 0.8f,
-            1.0f, 0.8f,
+            0.0f, 0.9f,
+            1.0f, 0.9f,
             0.0f, 0.0f,
             1.0f, 0.0f,
     };

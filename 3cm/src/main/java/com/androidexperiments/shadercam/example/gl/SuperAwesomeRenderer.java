@@ -14,8 +14,8 @@ import com.androidexperiments.shadercam.gl.CameraRenderer;
  * to pass in our global time uniform
  */
 public class SuperAwesomeRenderer extends CameraRenderer {
-    private float mHeightStretch_x_strength_input = 0.2f;
-    private float mHeightStretch_x_strength = 0.1f;
+    private float mHeightStretch_x_strength_input = 0.1f;
+    private float mHeightStretch_x_strength = 0.05f;
     private float mHeightStretch_x_point = 0.5f;
 
     private int mSurfaceWidth, mSurfaceHeight;
@@ -32,7 +32,7 @@ public class SuperAwesomeRenderer extends CameraRenderer {
 
     private float mStrengthShoulder = 0.0f;
     private float mStrengthChest = 0.0f;
-    private float mStrengthFace = 0.3f;
+    private float mStrengthFace = 1.1f;
 
 
     public SuperAwesomeRenderer(Context context, SurfaceTexture texture, int width, int height) {

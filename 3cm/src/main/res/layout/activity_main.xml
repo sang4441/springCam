@@ -25,13 +25,13 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <SeekBar
-                android:id="@+id/seek_bar"
+                android:id="@+id/seek_bar_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20px"
                 android:layout_marginRight="20px"
                 android:progress="25"
-                android:max="50"
+                android:max="25"
                 android:layout_marginTop="50px"
                 android:layout_centerVertical="true"
                 android:layout_toLeftOf="@+id/btn_control_height"/>
@@ -116,6 +116,18 @@
         <!--android:padding="10dp"/>-->
 
     </FrameLayout>
+
+    <SeekBar
+        android:id="@+id/seek_bar_face"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20px"
+        android:layout_marginRight="20px"
+        android:progress="50"
+        android:max="100"
+        android:layout_marginTop="50px"
+        android:layout_centerVertical="true"
+        android:layout_above="@+id/wrapper_bottom"/>
 
     <RelativeLayout
         android:id="@+id/wrapper_bottom"
