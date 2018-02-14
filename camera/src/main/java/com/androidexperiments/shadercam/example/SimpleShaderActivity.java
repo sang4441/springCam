@@ -144,9 +144,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
             @Override
             public boolean onTouch(View v, MotionEvent me) {
                 if (me.getAction() == MotionEvent.ACTION_DOWN){
-//                    oldXvalue = me.getX();
-//                    oldYvalue = me.getY();
-//                    Log.i(myTag, "Action Down " + oldXvalue + "," + oldYvalue);
                 }else if (me.getAction() == MotionEvent.ACTION_MOVE  ){
                     RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
                     params.setMargins(mTextureView.getWidth() - 100,
@@ -166,17 +163,14 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                 return true;
             }
         });
-//        int[] index_result = new int[]
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-//        int width = mTextureView.getWidth();
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
         params.setMargins(width - 100, height / 2 , 0, 0);
         btnControlHeight.setLayoutParams(params);
-//
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         lp.leftMargin = 20;
@@ -184,49 +178,15 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         lp.width = width - 120;
         lp.height = 50;
         mSeekbarHeight.setLayoutParams(lp);
-
-
-
-//        mSeekbar = new SeekBar(this);
-//        mSeekbar.setMax(100);
-//      seekBar.setIndeterminate(true);
-
-//        ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
-//
-//        thumb.setIntrinsicHeight(80);
-//        thumb.setIntrinsicWidth(30);
-//        seekBar.setThumb(thumb);
-//        mSeekbar.setProgress(50);
-//        mSeekbar.setVisibility(View.VISIBLE);
-//        mSeekbar.setBackgroundColor(Color.BLUE);
-
-//        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(1000, 50);
-//        mSeekbar.setLayoutParams(lp);
-//        btnShot.setLayoutParams(lp);
-
         mSeekbarHeight.setOnSeekBarChangeListener(this);
         mSeekbarHeight.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
         mSeekbarHeight.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-
-
-//        LinearLayout ll = new LinearLayout(this);
-//        ll.setOrientation(LinearLayout.VERTICAL);
-//
-//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//
-//        layoutParams.setMargins(30, 20, 30, 0);
-//
-//        SeekBar okButton=new SeekBar(this);
-//        okButton.setText("some text");
-//        ll.addView(mSeekbar, layoutParams);
-
         previewFaceDetector = new FaceDetector.Builder(getApplicationContext())
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
 //                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-//                .setMode(FaceDetector.FAST_MODE)
-//                .setProminentFaceOnly(true)
-//                .setTrackingEnabled(true)
+                .setMode(FaceDetector.FAST_MODE)
+                .setProminentFaceOnly(true)
+                .setTrackingEnabled(true)
                 .build();
         if(previewFaceDetector.isOperational()) {
             previewFaceDetector.setProcessor(new MultiProcessor.Builder<>(new GraphicFaceTrackerFactory()).build());
@@ -234,7 +194,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
             Toast.makeText(getApplicationContext(), "FACE DETECTION NOT AVAILABLE", Toast.LENGTH_SHORT).show();
         }
         setupCameraFragment();
-//        setupInteraction();
 
         //setup permissions for M or start normally
         if(PermissionsHelper.isMorHigher())
@@ -333,13 +292,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(mRenderer instanceof SuperAwesomeRenderer) {
-//                    float ratio = event.getRawY() /
-
-//                    float x = 0.9f;
-//                    mRenderer.resetTextureStretch(x);
-//                    float x_render = (1.0f - x);
-//                    ((SuperAwesomeRenderer) mRenderer).setStretchX(x_render);
-
                     ((SuperAwesomeRenderer) mRenderer).setTouchPoint(event.getRawX(), event.getRawY());
 
                     RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -357,9 +309,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                     lp2.topMargin = (int)event.getRawY();
                     lp2.width = 200;
                     lp2.height = 200;
-
-//                    btnShot.setLayoutParams(lp2);
-//                    MeetupActivity.
 
                     return true;
                 }
@@ -433,25 +382,11 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
      * {@link ButterKnife} uses annotations to make setting {@link android.view.View.OnClickListener}'s
      * easier than ever with the {@link OnClick} annotation.
      */
-//    @OnClick(R.id.btn_record)
-//    public void onClickRecord()
-//    {
-//        if(mRenderer.isRecording())
-//            stopRecording();
-//        else
-//            startRecording();
-//    }
-
     @OnClick(R.id.btn_shot)
     public void onClickRecord()
     {
-
         shotAction();
         takeShot();
-//        if(mRenderer.isRecording())
-//            stopRecording();
-//        else
-//            startRecording();
     }
 
     /**
@@ -480,17 +415,13 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         return new ExampleRenderer(this, surface, width, height);
     }
 
-//    private void takeShot() {
-////        mRenderer.takeShot();
-//    }
-
     private static File getOutputMediaFile() {
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-                "3CM");
+                "camera-opengl");
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
-                Log.d("Momento", "failed to create directory");
+                Log.d("log", "failed to create directory");
                 return null;
             }
         }
@@ -504,9 +435,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     }
 
     public String saveBitmap(Bitmap bmp) {
-//        String path = getPath(getApplicationContext());
-//        long currentTime = System.currentTimeMillis();
-//        String filename = path + "/" + currentTime + ".jpg";
         return saveBitmap(bmp, getOutputMediaFile().toString());
     }
 
@@ -537,16 +465,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         ((SuperAwesomeRenderer) mRenderer).setHeightStretchX(x_render);
     }
 
-    protected void setFaceStrength(float x_strength) {
-        ((SuperAwesomeRenderer) mRenderer).setFaceStrength(x_strength);
-    }
-
-
-
-    protected void shoulderRightStretchPosition(float x_val, float y_val) {
-//        ((SuperAwesomeRenderer) mRenderer).setShoulderStretchDirection(x_val, y_val);
-    }
-
 
     private void takeShot()
     {
@@ -557,12 +475,10 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                 if (bmp != null) {
                     String s = saveBitmap(bmp);
                     bmp.recycle();
-//                    showText("Take Shot success!");
                     sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + s)));
                 } else {
 
                 }
-//                    showText("Take Shot failed!");
             }
 
 
@@ -578,8 +494,6 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     private void stopRecording()
     {
         mRenderer.stopRecording();
-//        mRecordBtn.setText("Record");
-
         //restart so surface is recreated
         shutdownCamera(true);
 

@@ -10,14 +10,10 @@ attribute vec4 camTexCoordinateTwo;
 varying vec2 v_CamTexCoordinate;
 varying vec2 v_CamTexCoordinateTwo;
 
-
-
-
 void main()
 {
     //camera texcoord needs to be manipulated by the transform given back from the system
     v_CamTexCoordinate = (camTextureTransform * camTexCoordinate).xy;
     v_CamTexCoordinateTwo =  (camTextureTransform * camTexCoordinateTwo).xy;
     gl_Position = position;
-//    gl_Position = Distort(position);
 }

@@ -1,6 +1,5 @@
 #extension GL_OES_EGL_image_external : require
 
-//necessary
 precision mediump float;
 uniform samplerExternalOES camTexture;
 
@@ -8,31 +7,15 @@ varying vec2 v_CamTexCoordinate;
 varying vec2 v_CamTexCoordinateTwo;
 varying vec2 v_TexCoordinate;
 
-
 uniform float width;
 uniform float height;
-
 uniform float stretch_x_strenth;
 uniform float stretch_x_point;
-
-uniform float shoulder_stretch_strength;
-uniform vec2 point_shoulder_left;
-uniform vec2 point_shoulder_right;
-uniform vec2 point_chest_left;
-uniform vec2 point_chest_right;
 uniform vec2 point_face;
-
-uniform float radius_shoulder;
-uniform float radius_chest;
 uniform float radius_face;
-
-uniform float strength_shoulder;
-uniform float strength_chest;
 uniform float strength_face;
 
 const float radius = 100.0;
-const float PI = 3.1415926535;
-#define EPSILON 0.000011
 
 vec2 stretch(vec2 pos)
 {
@@ -64,7 +47,7 @@ vec2 Distort(vec2 p)
     return p;
 }
 
-vec4 test(vec2 p) {
+vec4 faceResize(vec2 p) {
 
     vec2 texSize = vec2(height, width);
     vec2 tc = p * texSize;
@@ -89,8 +72,6 @@ vec4 test(vec2 p) {
         bgColor = vec4(1.0, 1.0, 1.0, 1.0);
         c = texture2D(camTexture, p);
     }
-//     vec4 c = texture2D(camTexture, tc / texSize) * bgColor;
-
     return c;
 }
 
@@ -101,7 +82,7 @@ void main ()
 
   if (v_CamTexCoordinate.x<(stretch_x_point))
   {
-      gl_FragColor = test(v_CamTexCoordinate.xy);
+      gl_FragColor = faceResize(v_CamTexCoordinate.xy);
   }
   else if (v_CamTexCoordinate.x>=(stretch_x_point))
   {
