@@ -124,7 +124,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
         mSeekbarFace.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                ((SuperAwesomeRenderer) mRenderer).setFaceStrength(1.0f + (float)i/1000);
+                ((SuperAwesomeRenderer) mRenderer).setFaceStrength(1.0f + (float)i/200);
             }
 
             @Override
@@ -166,6 +166,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
                 return true;
             }
         });
+//        int[] index_result = new int[]
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -278,7 +279,7 @@ public class SimpleShaderActivity extends FragmentActivity implements CameraRend
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         float strength = 1.0f - (Float.valueOf(progress) / 100.0f);
-        float calc = strength + ((1.0f - strength) / 1.5f);
+        float calc = strength + ((1.0f - strength) / 2.0f);
         heightStretchPosition(calc);
     }
 

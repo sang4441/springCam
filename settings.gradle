@@ -1,1 +1,1 @@
-include ':shadercam', ':3cm'
+include ':shadercam', ':camera'

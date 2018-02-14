@@ -24,6 +24,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
+
             <SeekBar
                 android:id="@+id/seek_bar_height"
                 android:layout_width="match_parent"
@@ -36,12 +38,14 @@
                 android:layout_centerVertical="true"
                 android:layout_toLeftOf="@+id/btn_control_height"/>
 
+
             <Button
                 android:id="@+id/btn_control_height"
                 android:layout_width="100px"
                 android:layout_height="100px"
                 android:layout_alignParentRight="true"
-                android:background="@drawable/btn_camera_shot"/>
+                android:background="@drawable/icon_waist_48"/>
+
         </RelativeLayout>
 
 
@@ -117,17 +121,33 @@
 
     </FrameLayout>
 
-    <SeekBar
-        android:id="@+id/seek_bar_face"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20px"
-        android:layout_marginRight="20px"
-        android:progress="50"
-        android:max="100"
-        android:layout_marginTop="50px"
-        android:layout_centerVertical="true"
-        android:layout_above="@+id/wrapper_bottom"/>
+        android:orientation="horizontal"
+        android:layout_above="@+id/wrapper_bottom">
+
+        <SeekBar
+            android:id="@+id/seek_bar_face"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20px"
+            android:layout_marginRight="20px"
+            android:progress="25"
+            android:max="25"
+            android:layout_marginTop="50px"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/img_face"/>
+
+        <Button
+            android:id="@+id/img_face"
+            android:layout_width="100px"
+            android:layout_height="100px"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/icon_face_48"/>
+
+    </RelativeLayout>
+
 
     <RelativeLayout
         android:id="@+id/wrapper_bottom"
